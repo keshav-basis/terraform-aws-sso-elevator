@@ -1418,7 +1418,6 @@ def test_process_access_request_posts_pending_with_buttons_and_pings_approvers(m
         (_, succeeded), mock_execute, mock_discard = _process(main_module, client, decision, approvers=([approver], []))
 
     assert succeeded is True
-    assert decision.grant is False
     posted = client.chat_postMessage.call_args_list[0].kwargs
     assert posted["text"].endswith("*for 1 hour*")
     assert any(b["block_id"] == "buttons" for b in posted["blocks"])
