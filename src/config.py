@@ -6,7 +6,7 @@ import botocore.config
 from aws_lambda_powertools import Logger
 from mypy_boto3_s3 import S3Client
 from mypy_boto3_ssm import SSMClient
-from pydantic import field_validator, model_validator
+from pydantic import Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 import entities
@@ -162,6 +162,7 @@ class Config(BaseSettings):
 
     post_update_to_slack: bool = False
     slack_channel_id: str
+    approver_notification_slack_usergroup_id: str = Field(default="", pattern=r"^(S[A-Z0-9]+)?$")
 
     approver_renotification_initial_wait_time: int
     approver_renotification_backoff_multiplier: int

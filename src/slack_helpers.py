@@ -489,7 +489,9 @@ def intake_outcome(client: WebClient, decision: access_control.AccessRequestDeci
             if not approvers:
                 text = "None of the approvers from configuration could be found in Slack. Check the module configuration."
                 return IntakeOutcome(state=RequestState.failed_with("No approvers found in Slack"), thread_reply=text, dm=text)
-            mentions = " ".join(f"<@{approver.id}>" for approver in approvers)
+            # Notification routing is independent of the configured approval authority.
+            group_id = cfg.approver_notification_slack_usergroup_id
+            mentions = f"<!subteam^{group_id}>" if group_id else " ".join(f"<@{approver.id}>" for approver in approvers)
             text = f"{mentions}: waiting for your approval"
             if approver_emails_not_found:
                 text += (

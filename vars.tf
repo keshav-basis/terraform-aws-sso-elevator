@@ -201,6 +201,16 @@ variable "request_expiration_hours" {
   default     = 8
 }
 
+variable "approver_notification_slack_usergroup_id" {
+  description = "Slack user group to mention instead of individual approvers in approval notifications. Notification only: membership does not grant approval authority. Empty keeps individual mentions."
+  type        = string
+  default     = ""
+  validation {
+    condition     = var.approver_notification_slack_usergroup_id == "" || can(regex("^S[A-Z0-9]+$", var.approver_notification_slack_usergroup_id))
+    error_message = "Use a Slack user group ID beginning with S, or an empty string."
+  }
+}
+
 variable "approver_renotification_initial_wait_time" {
   description = "The initial wait time before the first re-notification to the approver is sent. This is measured in minutes. If set to 0, no re-notifications will be sent."
   type        = number

@@ -11,6 +11,14 @@ Users request and approve access through a Slack app. Setting it up takes a Terr
 
 No redeploy is needed. A failed access-requester start is not cached, so the next Slack request starts it again and it reads the new values. The revoker and attribute-syncer read the bot token on every invocation.
 
+## Approval notification mentions
+
+Set `approver_notification_slack_usergroup_id` to a Slack user group ID (for example,
+`S0123456789`) to mention that group instead of individual approvers when a request
+waits for approval. The default empty string keeps individual approver mentions.
+This only changes notifications: the configured approver emails and self-approval
+rules still determine who can approve. No additional Slack scopes are required.
+
 ## Create the Slack App
 
 1. Go to https://api.slack.com/apps and click **Create New App**.

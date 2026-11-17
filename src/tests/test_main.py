@@ -1399,20 +1399,30 @@ def test_process_access_request_shows_an_audit_write_failure_as_approved_with_a_
     assert extended["text"].startswith(":repeat: *Extended")
 
 
-def test_process_access_request_posts_pending_with_buttons_and_pings_approvers(main_module):
+@pytest.mark.parametrize(
+    ("notification_group_id", "expected_mention"),
+    [("", "<@U_APP>"), ("S0123456789", "<!subteam^S0123456789>")],
+)
+def test_process_access_request_posts_pending_with_buttons_and_pings_approvers(main_module, notification_group_id, expected_mention):
     client = _slack_client()
     approver = main_module.entities.slack.User(id="U_APP", email="approver@example.com", real_name="A")
     decision = _decision(
         main_module, main_module.access_control.DecisionReason.RequiresApproval, approvers=frozenset(["approver@example.com"])
     )
 
-    (_, succeeded), mock_execute, mock_discard = _process(main_module, client, decision, approvers=([approver], []))
+    with patch.object(
+        main_module.slack_helpers,
+        "cfg",
+        main_module.slack_helpers.cfg.model_copy(update={"approver_notification_slack_usergroup_id": notification_group_id}),
+    ):
+        (_, succeeded), mock_execute, mock_discard = _process(main_module, client, decision, approvers=([approver], []))
 
     assert succeeded is True
+    assert decision.grant is False
     posted = client.chat_postMessage.call_args_list[0].kwargs
     assert posted["text"].endswith("*for 1 hour*")
     assert any(b["block_id"] == "buttons" for b in posted["blocks"])
-    assert _thread_replies(client) == ["<@U_APP>: waiting for your approval"]
+    assert _thread_replies(client) == [f"{expected_mention}: waiting for your approval"]
     mock_discard.assert_called_once()
     # Called for every decision so a refusal can be audited; this one grants nothing.
     assert mock_execute.call_args.kwargs["decision"] is decision
